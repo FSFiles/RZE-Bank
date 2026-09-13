@@ -1,0 +1,16 @@
+/**
+ * Print-only styles — hides interactive chrome (nav, chat widget, floating
+ * decorations) when a customer prints a page (e.g. a loan/FD rate sheet).
+ */
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}

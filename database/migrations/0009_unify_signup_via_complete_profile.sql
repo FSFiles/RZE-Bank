@@ -1,0 +1,37 @@
+-- =========================================================
+-- RZE Bank — Unify signup around the Complete Profile step
+-- =========================================================
+-- Behavior change (application-side, nothing to run against a schema
+-- that's already up to date with 0008):
+--
+-- Previously, email/password signup collected ALL details (name,
+-- Aadhaar, PAN, address, account type...) up front, stashed them in
+-- `pending_registrations`, and relied on the `on_auth_user_email_verified`
+-- trigger (see 0001_init.sql / 0008_repair_email_verification_provisioning.sql)
+-- to create the Customer + Account rows the moment the user clicked the
+-- verification link.
+--
+-- The signup flow is now:
+--   1. Register with just email + password -> verification email sent.
+--   2. User clicks the link -> `/auth/callback` verifies + signs them in
+--      -> since no `customers` row exists yet, they land on
+--      `/complete-profile`.
+--   3. `/complete-profile` collects name, DOB, Aadhaar, PAN, address,
+--      account type, etc. and calls the `provision_customer` RPC
+--      directly (same RPC already used by the Google OAuth path),
+--      which creates the Customer + Account rows and returns the
+--      generated Customer ID + Account Number for the UI to reveal.
+--
+-- This means `registerCustomer` (app/lib/actions/auth.ts) no longer
+-- inserts into `pending_registrations`. The trigger from 0008 is safe
+-- to leave in place — it simply no-ops (`if not found then return new`)
+-- when there's no matching pending row, so nothing breaks. The table,
+-- trigger, and `repair_stuck_customer` RPC are kept only for backward
+-- compatibility with any registration that was mid-flight before this
+-- change shipped; no new code path writes to `pending_registrations`.
+--
+-- No schema changes are required by this migration — it exists purely
+-- as a record of the behavior change described above.
+-- =========================================================
+
+select 1; -- no-op
