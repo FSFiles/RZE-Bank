@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error("Supabase middleware is missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
-    return response;
+    return NextResponse.json({ error: "Supabase configuration is missing" }, { status: 503 });
   }
 
   const supabase = createServerClient(
