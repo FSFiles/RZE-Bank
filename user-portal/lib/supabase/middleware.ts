@@ -10,10 +10,17 @@ const CUSTOMER_AUTH_PAGES = ["/login", "/register", "/forgot-password", "/resend
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   let refreshedCookies: { name: string; value: string; options?: Parameters<typeof response.cookies.set>[2] }[] = [];
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("Supabase middleware is missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    return response;
+  }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
